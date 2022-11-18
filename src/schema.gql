@@ -30,4 +30,12 @@ type Mutation {
 
 type Query {
   appointments: [AppointmentModel!]!
+  privateInfo(token: String!): UserModel
+}
+
+type UserModel {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  password: String!
 }
