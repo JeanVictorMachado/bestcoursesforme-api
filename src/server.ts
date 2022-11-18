@@ -1,52 +1,24 @@
-import { ApolloServer, gql } from 'apollo-server'
-import { randomUUID } from 'node:crypto'
+import 'reflect-metadata'
 
-interface User {
-  id: string
-  name: string
+import path from 'node:path'
+
+import { ApolloServer } from 'apollo-server'
+import { buildSchema } from 'type-graphql'
+import { AppointmentsResolver } from './resolvers/appointments-resolver'
+
+const bootstrap = async () => {
+  const schema = await buildSchema({
+    resolvers: [AppointmentsResolver],
+    emitSchemaFile: path.resolve(__dirname, 'schema.gql'),
+  })
+
+  const server = new ApolloServer({
+    schema,
+  })
+
+  const { url } = await server.listen()
+
+  console.log(`🚀 HTTP server running on ${url}`)
 }
 
-const users: User[] = []
-
-const typeDefs = gql`
-  type User {
-    id: String!
-    name: String!
-  }
-
-  type Query {
-    users: [User!]!
-  }
-
-  type Mutation {
-    cresteUser(name: String!): User!
-  }
-`
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers: {
-    Query: {
-      users: () => {
-        return users
-      },
-    },
-
-    Mutation: {
-      cresteUser: (_, args) => {
-        const user = {
-          id: randomUUID(),
-          name: args.name,
-        }
-
-        users.push(user)
-
-        return user
-      },
-    },
-  },
-})
-
-server.listen().then(({ url }) => {
-  console.log(`🚀 HTTP server running on ${url}`)
-})
+bootstrap()
