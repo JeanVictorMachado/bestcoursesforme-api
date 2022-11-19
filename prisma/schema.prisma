@@ -21,8 +21,3 @@ model Tokens {
   user    Users  @relation(fields: [usersId], references: [id])
   usersId String
 }
-
-model Products {
-  id   String @id @default(cuid())
-  name String
-}

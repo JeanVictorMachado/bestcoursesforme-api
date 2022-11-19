@@ -16,3 +16,12 @@ export class UserModel {
   @Field((type) => Date)
   createdAt: Date
 }
+
+@ObjectType()
+export class UserWithTokenModel {
+  @Field()
+  user: UserModel
+
+  @Field()
+  token: string
+}
