@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsnd --respawn --transpile-only src/server.ts"
+    "dev": "docker-compose up -d && tsnd --respawn --transpile-only src/server.ts",
+    "docker:recreate": "docker-compose up -d --force-recreate"
   },
   "keywords": [],
   "author": "",
