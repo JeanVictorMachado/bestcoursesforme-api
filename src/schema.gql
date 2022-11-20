@@ -9,27 +9,25 @@ The javascript `Date` as string. Type represents date and time as the ISO Date s
 scalar DateTime
 
 type Mutation {
-  login(data: UserInput!): UserWithTokenModel!
-  signUp(data: UserInput!): UserModel!
+  createUser(data: UserInput!): UserModel!
 }
 
 type Query {
-  privateInfo(token: String!): UserModel
+  findUserById(id: String!): UserModel!
+  findUsers: [UserModel!]!
 }
 
 input UserInput {
   email: String!
+  name: String!
   password: String!
 }
 
 type UserModel {
-  createdAt: DateTime!
-  email: String!
-  id: ID!
-  password: String!
-}
-
-type UserWithTokenModel {
-  token: String!
-  user: UserModel!
+  createdAt: DateTime
+  email: String
+  id: ID
+  name: String
+  password: String
+  updatedAt: DateTime
 }

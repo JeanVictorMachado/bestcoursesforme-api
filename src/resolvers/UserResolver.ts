@@ -3,51 +3,45 @@ import { hash, compare } from 'bcryptjs'
 import { v4 as uuid } from 'uuid'
 import { Context } from '../context'
 
-import { UserModel, UserWithTokenModel } from '../dtos/models/UserModel'
+import { UserModel } from '../dtos/models/UserModel'
 import { UserInput } from '../dtos/inputs/UserInput'
 
-@Resolver()
+@Resolver(UserModel)
 export class UserResolver {
-  @Query((returns) => UserModel, { nullable: true })
-  async privateInfo(@Arg('token') token: string, @Ctx() ctx: Context): Promise<UserModel | null> {
-    const dbToken = await ctx.prisma.tokens.findUnique({
-      where: { token },
-      include: { user: true },
+  @Query(() => [UserModel])
+  async findUsers(@Ctx() ctx: Context) {
+    const users = await ctx.prisma.users.findMany()
+
+    const usersWithoutPassword = users.map((user) => {
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }
     })
 
-    if (!dbToken) return null
-
-    return dbToken.user
+    return usersWithoutPassword
   }
 
-  @Mutation((returns) => UserModel)
-  async signUp(@Arg('data') data: UserInput, @Ctx() ctx: Context): Promise<UserModel> {
+  @Query(() => UserModel)
+  async findUserById(@Arg('id') id: string, @Ctx() ctx: Context) {
+    const user = await ctx.prisma.users.findUnique({ where: { id } })
+
+    if (!user) throw new Error('User does not exists')
+
+    return user
+  }
+
+  @Mutation(() => UserModel)
+  async createUser(@Arg('data') data: UserInput, @Ctx() ctx: Context) {
     const hashedPassword = await hash(data.password, 10)
 
-    return ctx.prisma.users.create({
+    const user = await ctx.prisma.users.create({
       data: { ...data, password: hashedPassword },
     })
-  }
 
-  @Mutation((returns) => UserWithTokenModel)
-  async login(
-    @Arg('data') data: UserInput,
-    @Ctx() ctx: Context,
-  ): Promise<{ user: UserModel; token: string } | null> {
-    const user = await ctx.prisma.users.findUnique({ where: { email: data.email } })
-
-    if (!user) return null
-
-    const validation = await compare(data.password, user.password)
-
-    if (!validation) return null
-
-    const tokenCode = uuid()
-
-    const token = await ctx.prisma.tokens.create({
-      data: { token: tokenCode, user: { connect: { id: user.id } } },
-    })
-
-    return { user, token: token.token }
+    return user
   }
 }

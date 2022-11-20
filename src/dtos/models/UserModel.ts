@@ -3,25 +3,22 @@ import { IsEmail } from 'class-validator'
 
 @ObjectType()
 export class UserModel {
-  @Field((type) => ID)
+  @Field((type) => ID, { nullable: true })
   id: string
 
-  @Field()
+  @Field({ nullable: true })
+  name: string
+
+  @Field({ nullable: true })
   @IsEmail()
   email: string
 
-  @Field((type) => String)
+  @Field({ nullable: true })
   password: string
 
-  @Field((type) => Date)
+  @Field({ nullable: true })
   createdAt: Date
-}
 
-@ObjectType()
-export class UserWithTokenModel {
-  @Field()
-  user: UserModel
-
-  @Field()
-  token: string
+  @Field({ nullable: true })
+  updatedAt: Date
 }

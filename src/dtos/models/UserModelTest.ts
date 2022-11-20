@@ -1,0 +1,27 @@
+import { Field, ObjectType, ID } from 'type-graphql'
+import { IsEmail } from 'class-validator'
+
+@ObjectType()
+export class UserModel {
+  @Field((type) => ID)
+  id: string
+
+  @Field()
+  @IsEmail()
+  email: string
+
+  @Field((type) => String)
+  password: string
+
+  @Field((type) => Date)
+  createdAt: Date
+}
+
+@ObjectType()
+export class UserWithTokenModel {
+  @Field()
+  user: UserModel
+
+  @Field()
+  token: string
+}
