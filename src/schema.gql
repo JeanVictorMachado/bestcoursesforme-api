@@ -3,6 +3,11 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type AuthModel {
+  token: String!
+  user: UserModel!
+}
+
 """
 The javascript `Date` as string. Type represents date and time as the ISO Date string.
 """
@@ -10,11 +15,17 @@ scalar DateTime
 
 type Mutation {
   createUser(data: UserInput!): UserModel!
+  signIn(data: SessionInput!): AuthModel!
 }
 
 type Query {
   findUserById(id: String!): UserModel!
   findUsers: [UserModel!]!
+}
+
+input SessionInput {
+  email: String!
+  password: String!
 }
 
 input UserInput {

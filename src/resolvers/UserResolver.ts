@@ -1,6 +1,5 @@
 import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql'
-import { hash, compare } from 'bcryptjs'
-import { v4 as uuid } from 'uuid'
+import { hash } from 'bcryptjs'
 import { Context } from '../context'
 
 import { UserModel } from '../dtos/models/UserModel'
@@ -13,12 +12,14 @@ export class UserResolver {
     const users = await ctx.prisma.users.findMany()
 
     const usersWithoutPassword = users.map((user) => {
+      const { id, name, email, createdAt, updatedAt } = user
+
       return {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
+        id,
+        name,
+        email,
+        createdAt,
+        updatedAt,
       }
     })
 
@@ -31,17 +32,31 @@ export class UserResolver {
 
     if (!user) throw new Error('User does not exists')
 
-    return user
+    const { id: idUser, name, email, createdAt, updatedAt } = user
+
+    return {
+      id: idUser,
+      name,
+      email,
+      createdAt,
+      updatedAt,
+    }
   }
 
   @Mutation(() => UserModel)
   async createUser(@Arg('data') data: UserInput, @Ctx() ctx: Context) {
     const hashedPassword = await hash(data.password, 10)
 
-    const user = await ctx.prisma.users.create({
+    const { id, name, email, createdAt, updatedAt } = await ctx.prisma.users.create({
       data: { ...data, password: hashedPassword },
     })
 
-    return user
+    return {
+      id,
+      name,
+      email,
+      createdAt,
+      updatedAt,
+    }
   }
 }

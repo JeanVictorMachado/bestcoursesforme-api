@@ -7,16 +7,29 @@ import { buildSchema } from 'type-graphql'
 import { context } from './context'
 
 import { UserResolver } from './resolvers/UserResolver'
+import { SessionResolver } from './resolvers/SessionResolver'
+import { AuthAssurance } from './middlewares/AuthAssurance'
 
 const bootstrap = async () => {
   const schema = await buildSchema({
-    resolvers: [UserResolver],
+    resolvers: [UserResolver, SessionResolver],
+    authChecker: AuthAssurance,
     emitSchemaFile: path.resolve(__dirname, 'schema.gql'),
   })
 
   const server = new ApolloServer({
     schema,
-    context,
+    context: ({ req }) => {
+      const reqConfig = {
+        req,
+        token: req?.headers?.authorization,
+      }
+
+      return {
+        ...context,
+        ...reqConfig,
+      }
+    },
   })
 
   const { url } = await server.listen()
