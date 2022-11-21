@@ -17,11 +17,6 @@ export class GenerateToken {
   refreshToken(name: string, subject: string) {
     const { secretRefreshToken, expiresInRefreshToken, expiresRefreshTokenDays } = AuthConfig.jwt
 
-    console.log('secretRefreshToken: ', secretRefreshToken)
-    console.log('expiresInRefreshToken: ', expiresInRefreshToken)
-    console.log('expiresRefreshTokenDays: ', expiresRefreshTokenDays)
-    console.log('name: ', name)
-
     const token = sign({ name }, secretRefreshToken, {
       subject,
       expiresIn: expiresInRefreshToken,
