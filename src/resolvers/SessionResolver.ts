@@ -1,12 +1,10 @@
 import { Arg, Ctx, Mutation, Resolver } from 'type-graphql'
 import { compare } from 'bcryptjs'
 import { Context } from '../context'
-import AuthConfig from '../config/auth'
 
 import { AuthModel } from '../dtos/models/AuthModel'
 import { SessionInput } from '../dtos/inputs/SessionInput'
-import { sign } from 'jsonwebtoken'
-import dayjs from 'dayjs'
+import { GenerateToken } from '../utils/GenerateToken'
 
 @Resolver(AuthModel)
 export class SessionResolver {
@@ -20,25 +18,10 @@ export class SessionResolver {
 
     if (!passwordMatched) throw new Error('Incorrect email/password combination.')
 
-    const {
-      secretToken,
-      expiresInToken,
-      secretRefreshToken,
-      expiresInRefreshToken,
-      expiresRefreshTokenDays,
-    } = AuthConfig.jwt
+    const generateToken = new GenerateToken()
 
-    const token = sign({}, secretToken, {
-      subject: user.id,
-      expiresIn: expiresInToken,
-    })
-
-    const refreshToken = sign({ name: data.email }, secretRefreshToken, {
-      subject: user.id,
-      expiresIn: expiresInRefreshToken,
-    })
-
-    const refreshTokenExpiresDate = dayjs().add(expiresRefreshTokenDays, 'days').toDate()
+    const token = generateToken.accessToken(user.id)
+    const { token: refreshToken, expiresDate } = generateToken.refreshToken(data.email, user.id)
 
     await ctx.prisma.tokens.deleteMany({ where: { user_id: user.id } })
 
@@ -46,7 +29,7 @@ export class SessionResolver {
       data: {
         user_id: user.id,
         refresh_token: refreshToken,
-        expires_token: refreshTokenExpiresDate,
+        expires_token: expiresDate,
       },
     })
 

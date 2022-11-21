@@ -1,11 +1,11 @@
-import { sign, verify } from 'jsonwebtoken'
 import { Arg, Ctx, Mutation, Resolver } from 'type-graphql'
 import { Context } from '../context'
+import { GenerateToken } from '../utils/GenerateToken'
+import { verify } from 'jsonwebtoken'
 import AuthConfig from '../config/auth'
 
 import { RefreshTokenInput } from '../dtos/inputs/RefreshTokenInput'
 import { RefreshTokenModel } from '../dtos/models/RefreshTokenModel'
-import dayjs from 'dayjs'
 
 interface IPayloadToken {
   name: string
@@ -16,20 +16,11 @@ interface IPayloadToken {
 export class RefreshTokenResolver {
   @Mutation(() => RefreshTokenModel)
   async createRefreshToken(@Arg('data') data: RefreshTokenInput, @Ctx() ctx: Context) {
-    const {
-      secretToken,
-      expiresInToken,
-      secretRefreshToken,
-      expiresInRefreshToken,
-      expiresRefreshTokenDays,
-    } = AuthConfig.jwt
+    const { secretRefreshToken } = AuthConfig.jwt
 
     const { name, sub } = verify(data.refreshToken, secretRefreshToken) as IPayloadToken
 
     if (!sub) throw new Error('Invalid refresh token.')
-
-    console.log('sub: ', sub)
-    console.log('refreshToken: ', data.refreshToken)
 
     const userRefreshToken = await ctx.prisma.tokens.findFirst({
       where: {
@@ -42,24 +33,17 @@ export class RefreshTokenResolver {
 
     await ctx.prisma.tokens.delete({ where: { id: userRefreshToken?.id } })
 
-    const newRefreshToken = sign({ name }, secretRefreshToken, {
-      subject: String(sub),
-      expiresIn: expiresInRefreshToken,
-    })
+    const generateToken = new GenerateToken()
 
-    const refreshTokenExpiresDate = dayjs().add(expiresRefreshTokenDays, 'days').toDate()
+    const newToken = generateToken.accessToken(sub)
+    const { token: newRefreshToken, expiresDate } = generateToken.refreshToken(name, sub)
 
     await ctx.prisma.tokens.create({
       data: {
         user_id: sub,
         refresh_token: newRefreshToken,
-        expires_token: refreshTokenExpiresDate,
+        expires_token: expiresDate,
       },
-    })
-
-    const newToken = sign({}, secretToken, {
-      subject: sub,
-      expiresIn: expiresInToken,
     })
 
     return {
