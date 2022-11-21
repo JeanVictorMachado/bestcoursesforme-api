@@ -11,7 +11,7 @@ import { sign } from 'jsonwebtoken'
 export class SessionResolver {
   @Mutation(() => AuthModel)
   async signIn(@Arg('data') data: SessionInput, @Ctx() ctx: Context) {
-    const user = await ctx.prisma.users.findUnique({ where: { email: data.email } })
+    const user = await ctx.prisma.user.findUnique({ where: { email: data.email } })
 
     if (!user) throw new Error('Incorrect email/password combination.')
 

@@ -8,17 +8,31 @@ type AuthModel {
   user: UserModel!
 }
 
+input CourseInput {
+  name: String!
+}
+
+type CourseModel {
+  createdAt: DateTime
+  id: ID
+  name: String
+  updatedAt: DateTime
+}
+
 """
 The javascript `Date` as string. Type represents date and time as the ISO Date string.
 """
 scalar DateTime
 
 type Mutation {
+  createCourse(data: CourseInput!): CourseModel!
   createUser(data: UserInput!): UserModel!
   signIn(data: SessionInput!): AuthModel!
 }
 
 type Query {
+  findCourseById(id: String!): CourseModel!
+  findCourses: [CourseModel!]!
   findUserById(id: String!): UserModel!
   findUsers: [UserModel!]!
 }

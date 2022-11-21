@@ -1,3 +1,4 @@
+import { context } from './../context'
 import { AuthChecker } from 'type-graphql'
 import { verify } from 'jsonwebtoken'
 

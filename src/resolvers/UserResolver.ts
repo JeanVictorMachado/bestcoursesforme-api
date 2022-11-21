@@ -9,7 +9,7 @@ import { UserInput } from '../dtos/inputs/UserInput'
 export class UserResolver {
   @Query(() => [UserModel])
   async findUsers(@Ctx() ctx: Context) {
-    const users = await ctx.prisma.users.findMany()
+    const users = await ctx.prisma.user.findMany()
 
     const usersWithoutPassword = users.map((user) => {
       const { id, name, email, createdAt, updatedAt } = user
@@ -28,7 +28,7 @@ export class UserResolver {
 
   @Query(() => UserModel)
   async findUserById(@Arg('id') id: string, @Ctx() ctx: Context) {
-    const user = await ctx.prisma.users.findUnique({ where: { id } })
+    const user = await ctx.prisma.user.findUnique({ where: { id } })
 
     if (!user) throw new Error('User does not exists')
 
@@ -45,9 +45,13 @@ export class UserResolver {
 
   @Mutation(() => UserModel)
   async createUser(@Arg('data') data: UserInput, @Ctx() ctx: Context) {
+    const userExists = await ctx.prisma.user.findFirst({ where: { email: data.email } })
+
+    if (!!userExists) throw new Error('User already exists.')
+
     const hashedPassword = await hash(data.password, 10)
 
-    const { id, name, email, createdAt, updatedAt } = await ctx.prisma.users.create({
+    const { id, name, email, createdAt, updatedAt } = await ctx.prisma.user.create({
       data: { ...data, password: hashedPassword },
     })
 
