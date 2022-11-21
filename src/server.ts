@@ -10,10 +10,11 @@ import { UserResolver } from './resolvers/UserResolver'
 import { SessionResolver } from './resolvers/SessionResolver'
 import { AuthAssurance } from './middlewares/AuthAssurance'
 import { CourseResolver } from './resolvers/CourseResolver'
+import { RefreshTokenResolver } from './resolvers/RefreshTokenResolver'
 
 const bootstrap = async () => {
   const schema = await buildSchema({
-    resolvers: [UserResolver, SessionResolver, CourseResolver],
+    resolvers: [UserResolver, SessionResolver, CourseResolver, RefreshTokenResolver],
     authChecker: AuthAssurance,
     emitSchemaFile: path.resolve(__dirname, 'schema.gql'),
   })

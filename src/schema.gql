@@ -4,6 +4,7 @@
 # -----------------------------------------------
 
 type AuthModel {
+  refreshToken: String!
   token: String!
   user: UserModel!
 }
@@ -26,6 +27,7 @@ scalar DateTime
 
 type Mutation {
   createCourse(data: CourseInput!): CourseModel!
+  createRefreshToken(data: RefreshTokenInput!): RefreshTokenModel!
   createUser(data: UserInput!): UserModel!
   signIn(data: SessionInput!): AuthModel!
 }
@@ -35,6 +37,17 @@ type Query {
   findCourses: [CourseModel!]!
   findUserById(id: String!): UserModel!
   findUsers: [UserModel!]!
+}
+
+input RefreshTokenInput {
+  refreshToken: String!
+}
+
+type RefreshTokenModel {
+  createdAt: DateTime
+  refresh_token: String!
+  token: String!
+  updatedAt: DateTime
 }
 
 input SessionInput {

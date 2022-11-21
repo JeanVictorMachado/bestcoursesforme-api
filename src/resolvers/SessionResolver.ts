@@ -6,6 +6,7 @@ import AuthConfig from '../config/auth'
 import { AuthModel } from '../dtos/models/AuthModel'
 import { SessionInput } from '../dtos/inputs/SessionInput'
 import { sign } from 'jsonwebtoken'
+import dayjs from 'dayjs'
 
 @Resolver(AuthModel)
 export class SessionResolver {
@@ -19,16 +20,40 @@ export class SessionResolver {
 
     if (!passwordMatched) throw new Error('Incorrect email/password combination.')
 
-    const { secret, expiresIn } = AuthConfig.jwt
+    const {
+      secretToken,
+      expiresInToken,
+      secretRefreshToken,
+      expiresInRefreshToken,
+      expiresRefreshTokenDays,
+    } = AuthConfig.jwt
 
-    const token = sign({}, secret, {
+    const token = sign({}, secretToken, {
       subject: user.id,
-      expiresIn,
+      expiresIn: expiresInToken,
+    })
+
+    const refreshToken = sign({ name: data.email }, secretRefreshToken, {
+      subject: user.id,
+      expiresIn: expiresInRefreshToken,
+    })
+
+    const refreshTokenExpiresDate = dayjs().add(expiresRefreshTokenDays, 'days').toDate()
+
+    await ctx.prisma.tokens.deleteMany({ where: { user_id: user.id } })
+
+    await ctx.prisma.tokens.create({
+      data: {
+        user_id: user.id,
+        refresh_token: refreshToken,
+        expires_token: refreshTokenExpiresDate,
+      },
     })
 
     return {
       user,
       token,
+      refreshToken,
     }
   }
 }

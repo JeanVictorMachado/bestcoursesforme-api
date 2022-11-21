@@ -1,4 +1,3 @@
-import { context } from './../context'
 import { AuthChecker } from 'type-graphql'
 import { verify } from 'jsonwebtoken'
 
@@ -17,7 +16,7 @@ export const AuthAssurance: AuthChecker<Context> = ({ context }) => {
 
   if (!token) return false
 
-  const decoded = verify(token, AuthConfig.jwt.secret)
+  const decoded = verify(token, AuthConfig.jwt.secretToken)
 
   return !!decoded
 }

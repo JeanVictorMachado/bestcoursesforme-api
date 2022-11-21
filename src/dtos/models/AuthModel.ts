@@ -8,4 +8,7 @@ export class AuthModel {
 
   @Field({ nullable: false })
   token: string
+
+  @Field({ nullable: false })
+  refreshToken: string
 }

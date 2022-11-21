@@ -14,8 +14,21 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+  Tokens    Tokens[]
 
   @@map("users")
+}
+
+model Tokens {
+  id            String   @id @default(uuid())
+  refresh_token String
+  expires_token DateTime
+  user          User     @relation(fields: [user_id], references: [id])
+  user_id       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+
+  @@map("user_tokens")
 }
 
 model Course {
